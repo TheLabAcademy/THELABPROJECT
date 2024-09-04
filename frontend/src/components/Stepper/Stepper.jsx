@@ -30,6 +30,7 @@ export default function Stepper() {
     numero_de_telephone: "",
     adresse_postale: "",
     ville: "",
+    code_postal: "",
     img: "",
   });
   console.info("isFormValid from Stepper", isFormValid);
@@ -97,6 +98,7 @@ export default function Stepper() {
         <Recapitulatif
           selectedFormula={selectedFormula}
           selectedEvent={selectedEvent}
+          formUserInfos={formUserInfos}
         />
       )}
     </>

@@ -2,6 +2,7 @@
 /* eslint-disable object-shorthand */
 /* eslint-disable camelcase */
 /* eslint-disable no-unused-vars */
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const tables = require("../tables");
 
 const getPayment = async (req, res, next) => {
@@ -21,39 +22,81 @@ const getPayment = async (req, res, next) => {
 const addPayment = async (req, res, next) => {
   try {
     const id = req.payload;
-    const { amount, payment_method, discount_id } = req.body;
-    const [exist] = await tables.payment.queryGetPaymentById(id);
-    const [userDiscount] = await tables.user_discount.getIdController({
-      user_id: id,
-      discount_id: discount_id,
-    });
-    if (userDiscount.length) {
-      const [percent_value] = await tables.discount.queryAddDiscountById(
-        discount_id
+    console.info("id", req.body);
+    const { stripeCustomerId, planId, promoCode, paymentMethodId, email } =
+      req.body;
+    console.info(
+      "stripeCustomerId",
+      stripeCustomerId,
+      planId,
+      promoCode,
+      paymentMethodId
+    );
+
+    let customerId = stripeCustomerId;
+
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: email,
+      });
+      customerId = customer.id;
+    }
+
+    let promotionCodeId = null;
+    if (promoCode) {
+      // Lister tous les codes promotionnels
+      const promotionCodes = await stripe.promotionCodes.list();
+
+      // Trouver le code promotionnel correspondant au code promo fourni
+      const promotionCode = promotionCodes.data.find(
+        (p) => p.code === promoCode
       );
-      const newAmount =
-        amount - amount * (percent_value[0].percent_value / 100);
+
+      if (promotionCode) {
+        promotionCodeId = promotionCode.id;
+      } else {
+        return res.status(400).json({ error: "Code promo invalide." });
+      }
+    }
+    const subscription = await stripe.subscriptions.create({
+      default_payment_method: paymentMethodId,
+      customer: customerId,
+      items: [{ plan: planId }],
+      ...(promotionCodeId && { promotion_code: promotionCodeId }),
+      expand: ["latest_invoice.payment_intent"],
+    });
+
+    const paymentIntent = subscription.latest_invoice.payment_intent;
+
+    if (
+      paymentIntent.status === "requires_action" ||
+      paymentIntent.status === "requires_payment_method"
+    ) {
+      res.json = {
+        data: {
+          subscriptionId: subscription.id,
+          planId: planId,
+          clientSecret: paymentIntent.client_secret,
+          status: "requires_action",
+        },
+      };
+    } else if (subscription.status === "active") {
+      // Mettre à jour les informations Stripe dans la base de données
+      const amountPaid = paymentIntent.amount_received || paymentIntent.amount; // selon ce que Stripe retourne
+
+      // Mettre à jour les informations Stripe dans la base de données
       await tables.payment.queryAddPayment({
-        amount: newAmount,
-        payment_method,
-        discount_id,
-        user_id: id,
+        amount: amountPaid, // Montant réellement payé
+        paymentMethodId: paymentIntent.payment_method,
+        discount_id: promotionCodeId || null, // Vérifiez si vous avez un discount_id
+        user_id: id, // ID de l'utilisateur concerné
       });
-      res.json({ message: "Payment en cours avec code promo" });
-    } else {
-      await tables.payment.queryAddPayment({
-        amount,
-        payment_method,
-        discount_id,
-        user_id: id,
-      });
-      res.json({ message: "Payment en cours sans code promo" });
+      res.json({ message: "Payment réussi" });
     }
   } catch (err) {
     next(err);
   }
 };
-
 const updatePayment = async (req, res) => {
   try {
     const { bill_number } = req.params;

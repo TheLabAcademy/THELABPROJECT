@@ -72,6 +72,24 @@ export default function UserInformations({
       <div className="relative text-white">
         <input
           type="text"
+          id="code_postal"
+          name="code_postal"
+          className="input"
+          required
+          value={formUserInfos.code_postal}
+          onChange={handleUserInfosChange}
+          autoComplete="postal-code"
+        />
+        <label
+          htmlFor="code_postal"
+          className="absolute top-4 left-4 pointer-events-none transition-all duration-150 ease-[cubic-bezier(0.4,0,0.2,1)] text-gray-400"
+        >
+          Code Postal *
+        </label>
+      </div>
+      <div className="relative text-white">
+        <input
+          type="text"
           id="adresse_postale"
           name="adresse_postale"
           className="input"
@@ -234,6 +252,7 @@ UserInformations.propTypes = {
     numero_de_telephone: PropTypes.number.isRequired,
     adresse_postale: PropTypes.string.isRequired,
     ville: PropTypes.string.isRequired,
+    code_postal: PropTypes.number.isRequired,
   }).isRequired,
   setFormUserInfos: PropTypes.func.isRequired,
   setIsFormValid: PropTypes.func.isRequired,

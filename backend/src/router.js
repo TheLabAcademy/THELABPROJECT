@@ -246,7 +246,8 @@ router.post(
 router.get("/payment", verifyToken, paymentController.getPayment);
 // admin & superAdmin
 router.post("/payment", verifyToken, paymentController.addPayment);
-
+// verif après 3d secure
+router.post("/payment/verify", verifyToken, paymentController.checkPayment);
 // router.put("/payment/:bill_number", paymentController.updatePayment);
 // router.delete("/payment/:id", paymentController.deletePayment);
 

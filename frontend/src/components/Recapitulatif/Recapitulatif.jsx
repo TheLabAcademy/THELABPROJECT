@@ -7,6 +7,7 @@ import {
   CardCvcElement,
 } from "@stripe/react-stripe-js";
 import { UserContext } from "../../context/UserContext"; // Assurez-vous que le chemin est correct
+import Loader from "../loader/Loader";
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 // eslint-disable-next-line react/prop-types
@@ -49,7 +50,9 @@ export default function Recapitulatif({
   const { city, address, date } = selectedEvent;
   const { description, price, title } = selectedFormula;
   const [codePromo, setCodePromo] = useState("");
-
+  const [loading, setLoading] = useState(false);
+  const [checkpay, setCheckpay] = useState(null);
+  const [is3dSecurewait, setIs3dSecurewait] = useState(false);
   //   const handlePromoCode = (e) => {
   //     console.info("promo code");
   //   };
@@ -68,6 +71,57 @@ export default function Recapitulatif({
       errors.cvc = "Veuillez renseigner un code CVC valide";
     }
     return errors;
+  };
+
+  const handlePayment = async (payResult) => {
+    if (payResult) {
+      const { status, clientSecret, subscriptionId } = payResult;
+      console.info("payResult", payResult);
+      if (payResult.status === "requires_action" && payResult.clientSecret) {
+        setIs3dSecurewait(true);
+
+        const { error: confirmationError } =
+          await stripe.confirmCardPayment(clientSecret);
+
+        if (confirmationError) {
+          setIs3dSecurewait(false);
+          console.info("Erreur lors de l'authentification 3D Secure", false);
+          setNerror("Erreur lors de l'authentification 3D Secure");
+        } else {
+          const bodyToCheck = {
+            paymentIntentId: payResult.paymentIntentId,
+          };
+          if (codePromo && codePromo.length > 0) {
+            bodyToCheck.promoId = codePromo;
+          }
+          fetch(`${import.meta.env.VITE_BACKEND_URL}/api/payment/verify`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+            },
+            body: JSON.stringify(bodyToCheck),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              console.info("data", data);
+              if (data.status === "active") {
+                setIs3dSecurewait(false);
+                console.info("Abonnement créé ou modifié avec succès", true);
+                setNerror(null);
+              } else {
+                setNerror("Erreur lors de l'abonnement");
+              }
+            })
+            .catch((errorback) => console.error("Error:", errorback));
+        }
+      } else if (payResult.status === "active") {
+        console.info("Abonnement créé ou modifié avec succès", true);
+        setNerror(null);
+      } else {
+        setNerror("Erreur lors de l'abonnement");
+      }
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -109,7 +163,7 @@ export default function Recapitulatif({
           const body = {
             paymentMethodId: paymentMethod.id,
             stripeEmail: user.data?.email,
-            planId: selectedFormula.stripeId,
+            priceId: selectedFormula.stripeId,
             email: user.data?.email,
           };
 
@@ -119,7 +173,7 @@ export default function Recapitulatif({
 
           setBodyPay(body);
           // setSendPayment(true);
-
+          setLoading(true);
           fetch(`${import.meta.env.VITE_BACKEND_URL}/api/payment`, {
             method: "POST",
             headers: {
@@ -131,6 +185,8 @@ export default function Recapitulatif({
             .then((response) => response.json())
             .then((data) => {
               console.info("data", data);
+              handlePayment(data.data);
+              setLoading(false);
             })
             .catch((errorback) => console.error("Error:", errorback));
         }
@@ -139,45 +195,6 @@ export default function Recapitulatif({
       }
     }
   };
-
-  // useEffect(() => {
-  //   const handlePayment = async () => {
-  //     if (payResult) {
-  //       const { status, clientSecret, subscriptionId } = payResult;
-  //       setSendPayment(false);
-  //       if (status === "requires_action" && clientSecret) {
-  //         setIs3dSecurewait(true);
-
-  //         const { error: confirmationError } =
-  //           await stripe.confirmCardPayment(clientSecret);
-
-  //         if (confirmationError) {
-  //           setIs3dSecurewait(false);
-  //           openAlert("Erreur lors de l'authentification 3D Secure", false);
-  //           setNerror("Erreur lors de l'authentification 3D Secure");
-  //         } else {
-  //           setSendConfirm(true);
-  //           setClientSecretNew(clientSecret);
-  //           setSubscriptionId(subscriptionId);
-  //         }
-  //       } else if (status === "active") {
-  //         openAlert("Abonnement créé ou modifié avec succès", true);
-  //         verifyPro();
-  //         closeModal();
-  //         setNerror(null);
-  //         reload(true);
-  //       } else {
-  //         openAlert("Erreur lors de l'abonnement", false);
-  //         setNerror("Erreur lors de l'abonnement");
-  //       }
-  //     } else if (error) {
-  //       setNerror(error?.response?.data?.error?.message);
-  //       setSendPayment(false);
-  //     }
-  //   };
-
-  //   handlePayment();
-  // }, [payResult, error]);
 
   // useEffect(() => {
   //   if (checkpay) {
@@ -281,7 +298,9 @@ export default function Recapitulatif({
         onSubmit={handleSubmit}
         className="bg-red-600 text-white rounded px-2 mb-4"
       >
-        <button type="submit">Passer Au Paiement</button>
+        <button type="submit">
+          {!loading ? "Passer Au Paiement" : <Loader />}
+        </button>
       </form>
     </>
   );

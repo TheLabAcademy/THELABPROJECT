@@ -68,7 +68,7 @@ export const formulas = [
   {
     id: 1,
     title: "Basic",
-    stripeId: "prod_Qma5eMrowKXM4D",
+    stripeId: "price_1Pv0vILQrpvoRLpPrmnRoIDb",
     description: [
       "Accès à l'événement",
       "ScoreCard numérique personnalisée",
@@ -79,7 +79,7 @@ export const formulas = [
   {
     id: 2,
     title: "Premium",
-    stripeId: "prod_PzSK9FOOQnudlX",
+    stripeId: "price_1P9TPSLQrpvoRLpPLMkYmofD",
     description: [
       "Accès à l'événement",
       "ScoreCard numérique personnalisée",

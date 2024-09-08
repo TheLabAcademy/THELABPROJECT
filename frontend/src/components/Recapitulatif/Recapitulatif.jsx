@@ -91,8 +91,8 @@ export default function Recapitulatif({
           const bodyToCheck = {
             paymentIntentId: payResult.paymentIntentId,
           };
-          if (codePromo && codePromo.length > 0) {
-            bodyToCheck.promoId = codePromo;
+          if (payResult.discount_id) {
+            bodyToCheck.discount_id = payResult.discount_id;
           }
           fetch(`${import.meta.env.VITE_BACKEND_URL}/api/payment/verify`, {
             method: "POST",
@@ -233,13 +233,10 @@ export default function Recapitulatif({
           <p>Code Promo : </p> &nbsp;
           <input
             type="text"
-            className="rounded"
+            className="rounded text-black p-2"
             value={codePromo}
             onChange={(e) => setCodePromo(e.target.value)}
           />
-          <button className="bg-red-600 text-white rounded px-2">
-            Utiliser
-          </button>
         </div>
       </div>
       <div className="bg-gray-900 shadow rounded-lg p-6 mb-4">

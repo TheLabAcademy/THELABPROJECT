@@ -19,56 +19,166 @@ const getPayment = async (req, res, next) => {
   }
 };
 
+const applyPromotionCode = async (promoCode) => {
+  // Si un code promo est fourni, récupérer le montant associé avec stripe
+  // if (promoCode) {
+  //   const promotionCodes = await stripe.promotionCodes.list();
+  //   const promotionCode = promotionCodes.data.find(
+  //     (p) => p.code === promoCode
+  //   );
+
+  //   if (promotionCode) {
+  //     if (promotionCode.coupon.amount_off) {
+  //       promotionAmountOff = promotionCode.coupon.amount_off;
+  //     } else if (promotionCode.coupon.percent_off) {
+  //       promotionPercentageOff = promotionCode.coupon.percent_off;
+  //     }
+  //   } else {
+  //     throw new Error("Code promo invalide.");
+  //   }
+  // }
+
+  // Récupérer tous les codes promotionnels avec le même code
+  const discounts = await tables.discount.getDiscountAll();
+
+  // Filtrer pour obtenir tous les codes ayant le même nom de code promo
+  const promotionCodes = discounts.filter((d) => d.promo_code === promoCode);
+
+  if (promotionCodes.length === 0) {
+    throw new Error("Code promo introuvable.");
+  }
+
+  // Créer un tableau de promesses pour vérifier chaque code promo
+  const validCodesPromises = promotionCodes.map(async (promotionCode) => {
+    // Vérifier si le code promo est actif
+    if (promotionCode.status === 1) {
+      const currentDate = new Date();
+      const validityDate = new Date(promotionCode.duree_de_validite);
+
+      // Vérifier la validité de la date et la quantité restante
+      if (currentDate <= validityDate && promotionCode.quantity > 0) {
+        // Retourner les informations du code promo valide
+        return promotionCode;
+      }
+    }
+    return null; // Retourner null si le code promo n'est pas valide
+  });
+
+  // Attendre que toutes les vérifications soient terminées
+  const validCodes = await Promise.all(validCodesPromises);
+
+  // Filtrer les codes valides non-nuls
+  const validPromotionCodes = validCodes.filter((code) => code !== null);
+
+  if (validPromotionCodes.length === 0) {
+    throw new Error("Aucun code promo valide trouvé.");
+  }
+
+  // Sélectionner le meilleur code promo en fonction du pourcentage de réduction ou d'une autre logique
+  const bestPromotionCode = validPromotionCodes.reduce(
+    (bestCode, currentCode) => {
+      // Comparer par le pourcentage de réduction
+      if (currentCode.percent_value > (bestCode?.percent_value || 0)) {
+        return currentCode;
+      }
+      return bestCode;
+    },
+    null
+  );
+
+  // Décrémenter la quantité du meilleur code promo
+
+  return bestPromotionCode;
+};
+
+// Fonction séparée pour finaliser le paiement et enregistrer dans la base de données
+const finalizePayment = async (userId, paymentIntent, promotionCode) => {
+  const paymentMethodUsed = paymentIntent.payment_method;
+  const amountPaid = paymentIntent.amount_received || paymentIntent.amount;
+
+  await tables.payment.queryAddPayment({
+    amount: amountPaid,
+    payment_method: paymentMethodUsed,
+    discount_id: promotionCode ? promotionCode.id : null,
+    user_id: userId,
+  });
+
+  // Décrémenter la quantité du meilleur code promo
+  if (promotionCode) {
+    const updateFields = {
+      quantity: promotionCode.quantity - 1,
+      duree_de_validite: promotionCode.duree_de_validite,
+    };
+    await tables.discount.updateDiscount(promotionCode.id, updateFields);
+  }
+};
+
 const addPayment = async (req, res, next) => {
   try {
-    const id = req.payload; // ID de l'utilisateur
     const { stripeCustomerId, priceId, promoCode, paymentMethodId, email } =
       req.body;
+    const userId = req.payload; // ID de l'utilisateur
 
+    // Vérification des paramètres essentiels
+    if (!priceId || !paymentMethodId || !email) {
+      return res
+        .status(400)
+        .json({ error: "Des informations sont manquantes" });
+    }
+
+    // Récupérer ou créer le client Stripe
     let customerId = stripeCustomerId;
-
-    // Créer un client Stripe si non fourni
     if (!customerId) {
-      const customer = await stripe.customers.create({
-        email: email,
-      });
+      const customer = await stripe.customers.create({ email });
       customerId = customer.id;
     }
 
-    // Vérification si une méthode de paiement est fournie
-    if (!paymentMethodId) {
-      throw new Error("Aucune méthode de paiement fournie.");
-    }
-
-    // Attacher la méthode de paiement au client
+    // Attacher la méthode de paiement si nécessaire
     await stripe.paymentMethods.attach(paymentMethodId, {
       customer: customerId,
     });
     await stripe.customers.update(customerId, {
-      invoice_settings: {
-        default_payment_method: paymentMethodId,
-      },
+      invoice_settings: { default_payment_method: paymentMethodId },
     });
 
-    // Récupérer directement le prix à partir de priceId
+    // Récupérer les informations de prix et de produit
     const price = await stripe.prices.retrieve(priceId);
+    if (!price) return res.status(404).json({ error: "Prix introuvable" });
 
-    if (!price) {
-      throw new Error("Prix introuvable pour cet identifiant.");
+    const product = await stripe.products.retrieve(price.product);
+    if (!product) return res.status(404).json({ error: "Produit introuvable" });
+
+    // Vérifier le code promo (logique déplacée dans une fonction séparée)
+    let finalAmount = price.unit_amount;
+    const promotionCode = promoCode
+      ? await applyPromotionCode(promoCode)
+      : null;
+
+    if (promotionCode) {
+      if (promotionCode.percent_value) {
+        finalAmount = Math.max(
+          finalAmount - finalAmount * (promotionCode.percent_value / 100),
+          0
+        );
+      }
     }
 
-    // Créer un paiement unique pour le produit avec le priceId
+    // Créer le PaymentIntent
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: price.unit_amount, // Montant à payer en centimes
-      currency: price.currency, // Devise associée au prix
+      amount: finalAmount,
+      currency: price.currency,
       customer: customerId,
-      payment_method: paymentMethodId, // Utiliser la méthode de paiement fournie
+      payment_method: paymentMethodId,
       confirm: true,
-      automatic_payment_methods: {
-        enabled: true, // Active les méthodes automatiques
-        allow_redirects: "never", // Désactive les méthodes nécessitant des redirections
+      automatic_payment_methods: { enabled: true, allow_redirects: "never" },
+      metadata: {
+        product_name: product.name,
+        product_id: product.id,
+        price_id: price.id,
+        original_amount: price.unit_amount, // Montant initial sans réduction
+        discount_applied: promotionCode ? promotionCode.percent_value || 0 : 0, // Pourcentage de réduction appliqué, si applicable
+        promotion_id: promotionCode ? promotionCode.id : "none", // ID de la promotion appliquée, ou "none" si aucune
       },
-      ...(promoCode && { discount: { promotion_code: promoCode } }), // Optionnellement ajouter un code promo
     });
 
     // Vérifier le statut du paiement
@@ -76,39 +186,30 @@ const addPayment = async (req, res, next) => {
       paymentIntent.status === "requires_action" ||
       paymentIntent.status === "requires_payment_method"
     ) {
-      res.json({
+      return res.json({
         data: {
           paymentIntentId: paymentIntent.id,
           clientSecret: paymentIntent.client_secret,
+          discount_id: promotionCode ? promotionCode.id : null,
           status: "requires_action",
-          priceId: price.id, // ID du prix utilisé
+          priceId: price.id,
         },
       });
-    } else if (paymentIntent.status === "succeeded") {
-      // Récupérer la méthode de paiement utilisée
-      const paymentMethodUsed = paymentIntent.payment_method;
-
-      if (!paymentMethodUsed) {
-        throw new Error("La méthode de paiement est null.");
-      }
-
-      // Mettre à jour la base de données avec les informations de paiement
-      const amountPaid = paymentIntent.amount_received || paymentIntent.amount;
-      await tables.payment.queryAddPayment({
-        amount: amountPaid,
-        payment_method: paymentMethodUsed, // S'assurer que l'ID de la méthode de paiement n'est pas null
-        discount_id: promoCode || null,
-        user_id: id,
-        price_id: price.id, // Enregistrer le priceId
-      });
-      res.json({ message: `Paiement réussi pour le prix ${price.id}` });
-    } else {
-      res.json({ error: "Paiement échoué" });
     }
+    if (paymentIntent.status === "succeeded") {
+      // Ajouter l'enregistrement de paiement et mise à jour du code promo si applicable
+      await finalizePayment(userId, paymentIntent, promotionCode);
+      return res.json({ message: `Paiement réussi pour le prix ${price.id}` });
+    }
+
+    return res.status(400).json({ error: "Échec du paiement" });
   } catch (err) {
-    next(err);
+    console.error("Erreur lors du traitement du paiement :", err);
+    return next(err);
   }
 };
+
+// Fonction séparée pour appliquer et vérifier le code promotionnel
 
 const updatePayment = async (req, res) => {
   try {
@@ -137,14 +238,15 @@ const deletePayment = async (req, res) => {
 const checkPayment = async (req, res) => {
   try {
     const id = req.payload;
-    const { paymentIntentId, promoId } = req.body;
+    const { paymentIntentId, discount_id } = req.body;
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
     if (paymentIntent.status === "succeeded") {
+      await finalizePayment(id, paymentIntent, discount_id);
       await tables.payment.queryAddPayment({
         amount: paymentIntent.amount_received,
         payment_method: paymentIntent.payment_method,
-        discount_id: promoId || null,
+        discount_id: discount_id || null,
         user_id: id,
       });
 

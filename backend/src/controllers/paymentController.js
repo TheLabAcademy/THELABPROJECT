@@ -4,6 +4,7 @@
 /* eslint-disable no-unused-vars */
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const tables = require("../tables");
+const stock_event = require("./StockEventController");
 
 const getPayment = async (req, res, next) => {
   try {
@@ -20,7 +21,7 @@ const getPayment = async (req, res, next) => {
 };
 
 const applyPromotionCode = async (promoCode) => {
-  // Si un code promo est fourni, récupérer le montant associé avec stripe
+  // Utilisation code promo stripe fonctionnelle
   // if (promoCode) {
   //   const promotionCodes = await stripe.promotionCodes.list();
   //   const promotionCode = promotionCodes.data.find(
@@ -168,6 +169,7 @@ const addPayment = async (req, res, next) => {
       amount: finalAmount,
       currency: price.currency,
       customer: customerId,
+      receipt_email: email,
       payment_method: paymentMethodId,
       confirm: true,
       automatic_payment_methods: { enabled: true, allow_redirects: "never" },
@@ -199,7 +201,8 @@ const addPayment = async (req, res, next) => {
     if (paymentIntent.status === "succeeded") {
       // Ajouter l'enregistrement de paiement et mise à jour du code promo si applicable
       await finalizePayment(userId, paymentIntent, promotionCode);
-      return res.json({ message: `Paiement réussi pour le prix ${price.id}` });
+      await stock_event.createStockEvent(req, res);
+      return;
     }
 
     return res.status(400).json({ error: "Échec du paiement" });
@@ -250,7 +253,7 @@ const checkPayment = async (req, res) => {
         user_id: id,
       });
 
-      res.json({ message: "Payment réussi" });
+      await stock_event.createStockEvent(req, res);
     } else res.json({ error: "Payment échoué" });
   } catch (error) {
     res.status(500).json({ error: error.message });

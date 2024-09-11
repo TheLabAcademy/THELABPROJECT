@@ -100,6 +100,8 @@ router.get("/stockEvent", verifyToken, stockEventController.getAllStockEvents);
 // (specific USER)
 // Route to create a new Inscription for an Event
 router.post("/stockEvent", verifyToken, stockEventController.createStockEvent);
+// Route pour obternir les infos via le token
+router.get("/stockEvent/:token", stockEventController.getStockEventByToken);
 // Route to check if a user is already inscribed for an Event
 router.post(
   "/stockEvent/check",

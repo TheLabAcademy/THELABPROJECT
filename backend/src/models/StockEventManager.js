@@ -51,6 +51,24 @@ WHERE se.user_id = ?
       [event_id, user_id]
     );
   }
+
+  async updateStockEvent(id, updateData) {
+    return this.database.query(`UPDATE ${this.table} SET ? WHERE id = ?`, [
+      updateData,
+      id,
+    ]);
+  }
+
+  async getStockEventByToken(token) {
+    return this.database.query(
+      `SELECT se.id, se.event_id, se.unique_string, e.city, e.date, e.address, e.quantity, e.status, se.user_id, u.lastname, u.firstname, u.email, se.created_at
+      FROM ${this.table} AS se
+      JOIN event AS e ON se.event_id = e.id
+      JOIN user AS u ON se.user_id = u.id
+      WHERE se.token = ?`,
+      [token]
+    );
+  }
 }
 
 module.exports = StockEventManager;

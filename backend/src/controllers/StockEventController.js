@@ -21,7 +21,7 @@ const getAllStockEvents = async (req, res) => {
   }
 };
 
-const createStockEvent = async (req, res) => {
+const createStockEvent = async (req, res, charge) => {
   try {
     const event_id = req.body;
     const user_id = req.payload;
@@ -29,7 +29,8 @@ const createStockEvent = async (req, res) => {
     // Vérifiez si l'utilisateur est déjà inscrit
     const checkUserInEvent = await tables.stock_event.checkUserEvent(
       event_id.event_id,
-      user_id
+      user_id,
+      charge
     );
     if (checkUserInEvent[0].length > 0) {
       return res
@@ -40,7 +41,8 @@ const createStockEvent = async (req, res) => {
     // Créez l'événement sans token et unique_string
     const [createEventResult] = await tables.stock_event.createStockEvent(
       event_id.event_id,
-      user_id
+      user_id,
+      charge.id
     );
 
     if (createEventResult.affectedRows === 1) {
@@ -81,14 +83,15 @@ const createStockEvent = async (req, res) => {
         const [updateResult] = await tables.stock_event.decrementEventQuantity(
           event_id.event_id
         );
-
         if (updateResult.affectedRows === 1) {
           return res.status(201).json({
             data: {
               status: "accepted",
               date: stockEvent.createdAt,
               token, // Token unique basé sur la date de création
-              unique_string: uniqueString, // Unique string utilisée pour générer le token
+              unique_string: uniqueString,
+              receipt_url: charge.receipt_url, // Inclure le lien du reçu Stripe
+              // Unique string utilisée pour générer le token
             },
           });
         }

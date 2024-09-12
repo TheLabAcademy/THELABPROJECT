@@ -18,6 +18,7 @@ export default function Recapitulatif({
   selectedEvent,
   selectedFormula,
   formUserInfos,
+  ifEventCreated,
 }) {
   const CARD_ELEMENT_OPTIONS = {
     style: {
@@ -48,6 +49,7 @@ export default function Recapitulatif({
   const [codePromo, setCodePromo] = useState("");
   const [eventCreated, setEventCreated] = useState(false);
   const [eventToken, setEventToken] = useState(null);
+  const [receiptUrl, setReceiptUrl] = useState(null);
 
   const validate = () => {
     const validationErrors = {};
@@ -74,6 +76,7 @@ export default function Recapitulatif({
     console.info("payResult", payResult);
     if (payResult && payResult.status === "requires_action") {
       setIs3dSecurewait(true);
+      setNerror(null);
       const { error: confirmationError } = await stripe.confirmCardPayment(
         payResult.clientSecret
       );
@@ -86,6 +89,7 @@ export default function Recapitulatif({
         const bodyToCheck = {
           paymentIntentId: payResult.paymentIntentId,
           event_id: selectedEvent.id,
+          user_id: user.data.id,
         };
         if (payResult.discount_id) {
           bodyToCheck.discount_id = payResult.discount_id;
@@ -102,15 +106,18 @@ export default function Recapitulatif({
         })
           .then((response) => response.json())
           .then((data) => {
-            console.info("data", data);
-            if (data.status === "accepted") {
+            if (data.data.status === "accepted") {
               console.info("evenement souscris avec succès", true);
               setIs3dSecurewait(false);
               setNerror(null);
               setEventCreated(true);
-              setEventToken(payResult.token);
+              setNerror(null);
+              setEventToken(data.data.token);
+              setReceiptUrl(data.data.receipt_url);
+              ifEventCreated(true);
             } else {
               setNerror("Erreur lors de l'abonnement");
+              setIs3dSecurewait(false);
               setLoading(false);
             }
             // setLoading(false); // Arrête le loading ici aussi
@@ -122,11 +129,13 @@ export default function Recapitulatif({
           });
       }
     } else if (payResult.status === "accepted") {
-      console.info("evenement souscris avec succès", true);
+      console.info("evenement souscris avec succès", payResult.token);
       setIs3dSecurewait(false);
+      setEventToken(payResult.token);
+      setReceiptUrl(payResult.receipt_url);
       setNerror(null);
       setEventCreated(true);
-      setEventToken(payResult.token);
+      ifEventCreated(true);
       // setLoading(false);
     } else {
       setIs3dSecurewait(false);
@@ -176,13 +185,33 @@ export default function Recapitulatif({
               event_id: selectedEvent.id,
             }),
           })
-            .then((response) => response.json())
-            .then((data) => {
-              handlePayment(data.data);
+            .then((response) => {
+              // Vérifier si la réponse a un statut HTTP d'erreur
+              if (!response.ok) {
+                return response.json().then((errorData) => {
+                  return Promise.reject(
+                    new Error(errorData.error || "Erreur inconnue.")
+                  ); // Propager l'erreur avec le message
+                });
+              }
+              return response.json(); // Si tout est OK, traiter la réponse JSON
             })
-            .catch((errorpayment) => {
-              setNerror("Erreur lors de l'envoi du paiement.");
+            .then((data) => {
+              handlePayment(data.data); // Continuer avec la logique de paiement
+            })
+            // eslint-disable-next-line no-shadow
+            .catch((error) => {
               setLoading(false);
+              // Vérifier si le message d'erreur correspond à une situation spécifique
+              if (
+                error.message === "Ce code promo n'est plus valide." ||
+                error.message === "Code promo introuvable." ||
+                error.message === "Vous êtes déjà inscrit à cet événement."
+              ) {
+                setNerror(error.message); // Afficher l'erreur spécifique liée au code promo ou inscription
+              } else {
+                setNerror("Une erreur est survenue, veuillez réessayer."); // Message d'erreur générique
+              }
             });
         }
       } catch (error) {
@@ -192,9 +221,9 @@ export default function Recapitulatif({
     }
   };
 
-  return (
+  return !eventCreated ? (
     <>
-      <div className="text-white border-2 border-red-600 my-8 flex flex-col p-4 items-start">
+      <div className="text-white border-2 border-red-600 my-8 flex flex-col p-4 items-start ">
         <h1 className="self-center">Récapitulatif</h1>
         <p>Événement : {selectedEvent.city}</p>
         <p>Adresse : {selectedEvent.address}</p>
@@ -273,27 +302,38 @@ export default function Recapitulatif({
         </div>
       </div>
 
-      {!eventCreated ? (
-        <form onSubmit={handleSubmit}>
-          {/* <button type="submit" disabled={loading}> */}
-          <button
-            type="submit"
-            className="bg-red-600 text-white rounded px-2 mb-4"
-          >
-            {!loading ? "Passer Au Paiement" : <Loader />}
-          </button>
-          {is3dSecurewait && (
-            <h4 className="text-white">3D Secure en attente...</h4>
-          )}
-          {nerrors && <p className="text-red-600">{nerrors}</p>}
-        </form>
-      ) : (
-        eventToken && (
-          <div className="pdf-preview w-2/4">
-            <TicketViewer token={eventToken} />
-          </div>
-        )
-      )}
+      <form onSubmit={handleSubmit}>
+        {/* <button type="submit" disabled={loading}> */}
+        <button
+          type="submit"
+          className="bg-green-600 text-white rounded px-2 mb-4"
+        >
+          {!loading ? "Passer Au Paiement" : <Loader />}
+        </button>
+        {is3dSecurewait && (
+          <h4 className="text-white">3D Secure en attente...</h4>
+        )}
+        {nerrors && <p className="text-red-600">{nerrors}</p>}
+      </form>
     </>
+  ) : (
+    <div className="pdf-preview w-2/4 py-8">
+      <h3 className="text-2xl font-bold mb-4 text-left text-white">
+        Félicitations, <br /> vous avez souscrit à l'événement avec succès !
+      </h3>
+
+      {eventToken ? (
+        <TicketViewer token={eventToken} receiptUrl={receiptUrl} />
+      ) : (
+        <Loader />
+      )}
+
+      <a
+        href="/"
+        className="bg-red-600 hover:bg-red-900 text-white font-bold py-2 px-4 rounded m-30"
+      >
+        Retour
+      </a>
+    </div>
   );
 }

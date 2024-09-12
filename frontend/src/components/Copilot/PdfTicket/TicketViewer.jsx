@@ -3,7 +3,7 @@ import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
 import EventTicket from "./EventTicket"; // Le composant du ticket que tu as déjà créé
 
 // eslint-disable-next-line react/prop-types
-function TicketViewer({ token }) {
+function TicketViewer({ token, receiptUrl }) {
   const [ticketData, setTicketData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,7 +13,7 @@ function TicketViewer({ token }) {
     const fetchTicketData = async () => {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/api/stockEvent/${token}`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/stockEvent/bytoken/${token}`,
           {
             method: "GET",
             headers: {
@@ -73,7 +73,7 @@ function TicketViewer({ token }) {
   });
 
   return (
-    <div className="p-4 max-w-full h-auto text-white">
+    <div className="p-4 max-w-full h-auto text-white border-2 border-white rounded-lg border-opacity-50 ">
       <h2 className="text-2xl font-bold mb-4 text-left">
         Votre billet pour {ticketData.city}
       </h2>
@@ -90,7 +90,7 @@ function TicketViewer({ token }) {
         </p>
       </div>
 
-      <div className="text-center mt-4">
+      <div className="text-center inline-flex mt-4  gap-2">
         <PDFDownloadLink
           document={
             <EventTicket
@@ -108,10 +108,22 @@ function TicketViewer({ token }) {
               disabled={pdfLoading}
               className="bg-red-600 hover:bg-red-900 text-white font-bold py-2 px-4 rounded"
             >
-              {pdfLoading ? "Génération du PDF..." : "Télécharger le billet"}
+              <p>
+                {pdfLoading ? "Génération du PDF..." : "Télécharger le billet"}
+              </p>
             </button>
           )}
         </PDFDownloadLink>
+        {receiptUrl && (
+          <a
+            href={receiptUrl}
+            rel="noreferrer noopener"
+            target="_blank"
+            className="bg-red-600 hover:bg-red-900 text-white font-bold py-2 px-4 rounded"
+          >
+            <p>Afficher votre reçu</p>
+          </a>
+        )}
       </div>
 
       <div className="w-full h-96 mt-4">

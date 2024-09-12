@@ -58,7 +58,7 @@ export default function Stepper() {
           </div>
         ))}
       </div>
-      {!complete && (
+      {currentStep < 4 && (
         <button
           className="mt-4 text-md font-bold text-center text-secondary bg-primary focus:outline-none 
             bg-gradient-to-r from-[#4CACFF] via-[#A070EF] to-[#8E78DA] rounded-xl hover:bg-gradient-to-r hover:from-[#4CACFF] hover:via-[#4CACFF] hover:to-[#4CACFF] ease-in font-primary-font p-2"
@@ -99,6 +99,7 @@ export default function Stepper() {
           selectedFormula={selectedFormula}
           selectedEvent={selectedEvent}
           formUserInfos={formUserInfos}
+          ifEventCreated={(finish) => setcomplete(finish)}
         />
       )}
     </>

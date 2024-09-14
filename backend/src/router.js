@@ -20,8 +20,6 @@ const eventControllers = require("./controllers/EventController");
 const productController = require("./controllers/productController");
 const missionsController = require("./controllers/missionsControllers");
 const userMissionsController = require("./controllers/userMissionsControllers");
-const discountStatus = require("./services/discountStatus");
-const expireDiscount = require("./services/expireDiscount");
 
 // --------------------ROUTES FOR USER--------------------//
 //* *** SPECIFIC ROUTES FOR USER AUTH****
@@ -100,6 +98,11 @@ router.get("/stockEvent", verifyToken, stockEventController.getAllStockEvents);
 // (specific USER)
 // Route to create a new Inscription for an Event
 router.post("/stockEvent", verifyToken, stockEventController.createStockEvent);
+// Route pour obternir les infos via le token
+router.get(
+  "/stockEvent/bytoken/:token",
+  stockEventController.getStockEventByToken
+);
 // Route to check if a user is already inscribed for an Event
 router.post(
   "/stockEvent/check",
@@ -236,8 +239,6 @@ router.get(
 router.post(
   "/userDiscount",
   verifyToken,
-  discountStatus,
-  expireDiscount,
   userDiscountController.addUserDiscount
 );
 
@@ -246,7 +247,8 @@ router.post(
 router.get("/payment", verifyToken, paymentController.getPayment);
 // admin & superAdmin
 router.post("/payment", verifyToken, paymentController.addPayment);
-
+// verif après 3d secure
+router.post("/payment/verify", verifyToken, paymentController.checkPayment);
 // router.put("/payment/:bill_number", paymentController.updatePayment);
 // router.delete("/payment/:id", paymentController.deletePayment);
 

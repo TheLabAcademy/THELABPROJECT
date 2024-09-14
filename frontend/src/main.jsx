@@ -12,6 +12,8 @@ import Layout from "./components/layout/Layout";
 import { UserContext, UserProvider } from "./context/UserContext";
 import "./index.css";
 import ResetPassword from "./pages/ResetPassword/ResetPassword";
+import TicketPage from "./pages/Ticket/TicketPage";
+
 // import About from "./pages/About/About";
 // import BackOfficePages from "./pages/BackOfficePages/BackOfficePages";
 // import CodePromo from "./pages/BackOfficePages/CodePromo";
@@ -111,6 +113,7 @@ export default function AppLayout() {
           <Route path="/giveaway" element={<Giveaway />} />
           <Route path="/legal" element={<Legal />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/ticket/:token" element={<TicketPage />} />
 
           {user?.isLogged ? (
             user.data?.is_admin === "admin" ||
@@ -163,6 +166,7 @@ export default function AppLayout() {
                   path="/copilot/copilot_score_card"
                   element={<CopilotScoreCard />}
                 />
+
                 <Route path="/copilot/participate" element={<Participate />} />
               </>
             )

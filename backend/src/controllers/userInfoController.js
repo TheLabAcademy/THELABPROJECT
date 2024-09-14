@@ -44,7 +44,6 @@ const read = async (req, res) => {
 const edit = async (req, res) => {
   try {
     const id = req.payload;
-
     const {
       taille,
       poids,

@@ -135,9 +135,7 @@ function EventTicket({
             Merci pour votre inscription à {eventName}. Veuillez présenter ce
             ticket à l'entrée.
           </Text>
-          <Text>
-            Contactez-nous à support@evenement.com en cas de questions.
-          </Text>
+          <Text>Contactez-nous à support@thelab.com en cas de questions.</Text>
         </View>
 
         <View style={styles.logosec}>

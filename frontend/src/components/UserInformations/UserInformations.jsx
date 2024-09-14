@@ -3,27 +3,33 @@
 import PropTypes from "prop-types";
 // import { useState } from "react";
 
-export default function UserInformations({
-  formUserInfos,
-  setFormUserInfos,
-  setIsFormValid,
-}) {
+export default function UserInformations({ formUserInfos, setFormUserInfos }) {
   const handleUserInfosSubmit = (e) => {
     e.preventDefault();
   };
-
-  const handleUserInfosChange = (e) => {
-    setFormUserInfos((prevFormUserInfos) => {
-      const updatedFormUserInfos = {
-        ...prevFormUserInfos,
-        [e.target.name]: e.target.value,
-      };
-      const isFormValid = Object.values(updatedFormUserInfos).every(
-        (value) => value !== "" && value !== null && value !== undefined
-      );
-      setIsFormValid(isFormValid);
-      return updatedFormUserInfos;
-    });
+  const handleUserInfosChange = (event) => {
+    const { name, value, files } = event.target;
+    if (name === "img") {
+      if (files === null) {
+        const file = `${import.meta.env.VITE_BACKEND_URL}/${formUserInfos[0].avatar}`;
+        console.info("file", file);
+        setFormUserInfos((prevFormData) => ({
+          ...prevFormData,
+        }));
+      } else {
+        const file = files[0];
+        console.info("file", file);
+        setFormUserInfos((prevFormData) => ({
+          ...prevFormData,
+          [name]: file,
+        }));
+      }
+    } else {
+      setFormUserInfos((prevFormData) => ({
+        ...prevFormData,
+        [name]: value,
+      }));
+    }
   };
 
   return (
@@ -255,5 +261,4 @@ UserInformations.propTypes = {
     code_postal: PropTypes.number.isRequired,
   }).isRequired,
   setFormUserInfos: PropTypes.func.isRequired,
-  setIsFormValid: PropTypes.func.isRequired,
 };

@@ -28,7 +28,6 @@ export default function EditUserModal({
 
   const handleChange = (event) => {
     const { name, value, files } = event.target;
-    console.info("files", files);
     if (name === "img") {
       if (files === null) {
         const file = `${import.meta.env.VITE_BACKEND_URL}/${formData[0].avatar}`;
@@ -53,6 +52,7 @@ export default function EditUserModal({
   };
 
   const updateUserInfo = (updatedUserInfo) => {
+    console.info("updatedUserInfo", updatedUserInfo);
     const formDataToSend = new FormData();
     Object.entries(formData).forEach(([key, value]) => {
       formDataToSend.append(key, value);

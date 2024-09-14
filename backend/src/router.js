@@ -20,8 +20,6 @@ const eventControllers = require("./controllers/EventController");
 const productController = require("./controllers/productController");
 const missionsController = require("./controllers/missionsControllers");
 const userMissionsController = require("./controllers/userMissionsControllers");
-const discountStatus = require("./services/discountStatus");
-const expireDiscount = require("./services/expireDiscount");
 
 // --------------------ROUTES FOR USER--------------------//
 //* *** SPECIFIC ROUTES FOR USER AUTH****
@@ -241,8 +239,6 @@ router.get(
 router.post(
   "/userDiscount",
   verifyToken,
-  discountStatus,
-  expireDiscount,
   userDiscountController.addUserDiscount
 );
 

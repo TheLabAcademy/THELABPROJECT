@@ -106,7 +106,8 @@ function TicketViewer({ token, receiptUrl }) {
           {({ loading: pdfLoading }) => (
             <button
               disabled={pdfLoading}
-              className="bg-red-600 hover:bg-red-900 text-white font-bold py-2 px-4 rounded"
+              className="mt-4 text-md font-bold text-center text-secondary bg-primary focus:outline-none font-semibold
+              bg-gradient-to-r from-[#4CACFF] via-[#A070EF] to-[#8E78DA] rounded-xl hover:bg-gradient-to-r hover:from-[#4CACFF] hover:via-[#4CACFF] hover:to-[#4CACFF] ease-in font-secondary-font p-2"
             >
               <p>
                 {pdfLoading ? "Génération du PDF..." : "Télécharger le billet"}
@@ -119,14 +120,15 @@ function TicketViewer({ token, receiptUrl }) {
             href={receiptUrl}
             rel="noreferrer noopener"
             target="_blank"
-            className="bg-red-600 hover:bg-red-900 text-white font-bold py-2 px-4 rounded"
+            className="mt-4 text-md font-bold text-center text-secondary bg-primary focus:outline-none font-semibold
+            bg-gradient-to-r from-[#4CACFF] via-[#A070EF] to-[#8E78DA] rounded-xl hover:bg-gradient-to-r hover:from-[#4CACFF] hover:via-[#4CACFF] hover:to-[#4CACFF] ease-in font-secondary-font p-2"
           >
             <p>Afficher votre reçu</p>
           </a>
         )}
       </div>
 
-      <div className="w-full h-96 mt-4">
+      <div className="w-full h-96 mt-4 mb-5">
         <PDFViewer className="w-full h-full">
           <EventTicket
             eventName={ticketData.city}
@@ -137,6 +139,13 @@ function TicketViewer({ token, receiptUrl }) {
           />
         </PDFViewer>
       </div>
+      <a
+        href="/"
+        className="mt-10 text-md font-bold text-center text-secondary bg-primary focus:outline-none font-semibold 
+           bg-gray-800 rounded-xl hover:bg-gradient-to-r hover:from-[#4CACFF] hover:via-[#4CACFF] hover:to-[#4CACFF] ease-in font-secondary-font p-2"
+      >
+        Retour à l'accueil
+      </a>
     </div>
   );
 }

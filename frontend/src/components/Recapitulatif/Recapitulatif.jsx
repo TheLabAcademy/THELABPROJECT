@@ -28,7 +28,7 @@ export default function Recapitulatif({
         fontSmoothing: "antialiased",
         fontSize: "16px",
         "::placeholder": {
-          color: "grey",
+          color: "gray",
         },
       },
       invalid: {
@@ -44,12 +44,52 @@ export default function Recapitulatif({
 
   const [errors, setErrors] = useState({});
   const [nerrors, setNerror] = useState(null);
+  const [promoError, setPromoError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [is3dSecurewait, setIs3dSecurewait] = useState(false);
   const [codePromo, setCodePromo] = useState("");
   const [eventCreated, setEventCreated] = useState(false);
   const [eventToken, setEventToken] = useState(null);
   const [receiptUrl, setReceiptUrl] = useState(null);
+  const [promoReduction, setPromoReduction] = useState(null);
+
+  const submitPromo = () => {
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/userDiscount`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+      },
+      body: JSON.stringify({ promoCode: codePromo }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          return response.json().then((error) => {
+            return Promise.reject(
+              new Error(error.message || "Erreur inconnue.")
+            );
+          });
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.info("data", data);
+        if (data.success) {
+          setPromoReduction(data.promo);
+          setPromoError(null); // Stocker la réduction
+        } else {
+          setPromoError(data.message);
+          setCodePromo("");
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setPromoError(
+          "Erreur lors de l'application du code promo, veuillez réessayer."
+        );
+        setCodePromo("");
+      });
+  };
 
   const validate = () => {
     const validationErrors = {};
@@ -129,7 +169,6 @@ export default function Recapitulatif({
           });
       }
     } else if (payResult.status === "accepted") {
-      console.info("evenement souscris avec succès", payResult.token);
       setIs3dSecurewait(false);
       setEventToken(payResult.token);
       setReceiptUrl(payResult.receipt_url);
@@ -188,9 +227,10 @@ export default function Recapitulatif({
             .then((response) => {
               // Vérifier si la réponse a un statut HTTP d'erreur
               if (!response.ok) {
-                return response.json().then((errorData) => {
+                // eslint-disable-next-line no-shadow
+                return response.json().then((error) => {
                   return Promise.reject(
-                    new Error(errorData.error || "Erreur inconnue.")
+                    new Error(error.message || "Erreur inconnue.")
                   ); // Propager l'erreur avec le message
                 });
               }
@@ -208,9 +248,9 @@ export default function Recapitulatif({
                 error.message === "Code promo introuvable." ||
                 error.message === "Vous êtes déjà inscrit à cet événement."
               ) {
-                setNerror(error.message); // Afficher l'erreur spécifique liée au code promo ou inscription
+                setNerror(error.message);
               } else {
-                setNerror("Une erreur est survenue, veuillez réessayer."); // Message d'erreur générique
+                setNerror("Une erreur est survenue, veuillez réessayer.");
               }
             });
         }
@@ -222,100 +262,153 @@ export default function Recapitulatif({
   };
 
   return !eventCreated ? (
-    <>
-      <div className="text-white border-2 border-red-600 my-8 flex flex-col p-4 items-start ">
-        <h1 className="self-center">Récapitulatif</h1>
-        <p>Événement : {selectedEvent.city}</p>
-        <p>Adresse : {selectedEvent.address}</p>
-        <p>
-          Date :{" "}
-          {new Date(selectedEvent.date).toLocaleDateString("fr-FR", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          })}
+    <div className="lg:bg-[#281f31] text-white border-2 border-gray-600 rounded-2xl  my-8 flex flex-col p-6 items-start space-y-4 w-full max-w-2xl">
+      <h1 className="text-2xl font-bold text-center w-full mb-4">
+        Récapitulatif
+      </h1>
+
+      <p className="text-lg">
+        <strong>Événement :</strong> {selectedEvent.city}
+      </p>
+
+      <p className="text-lg">
+        <strong>Adresse :</strong> {selectedEvent.address}
+      </p>
+
+      <p className="text-lg">
+        <strong>Date :</strong>{" "}
+        {new Date(selectedEvent.date).toLocaleDateString("fr-FR", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })}
+      </p>
+
+      <p className="text-lg">
+        <strong>Formule :</strong> {selectedFormula.title}
+      </p>
+
+      <p className="text-lg">
+        <strong>Prix :</strong> {selectedFormula.price} €
+        {promoReduction && (
+          <span className="text-green-500">
+            {" "}
+            (-{promoReduction} % de réduction appliqué)
+          </span>
+        )}
+      </p>
+      {promoReduction ? (
+        <p className="text-lg">
+          <strong>Prix après réduction : </strong>
+          {promoReduction
+            ? (selectedFormula.price * (1 - promoReduction / 100)).toFixed(2)
+            : selectedFormula.price}{" "}
+          €
         </p>
-        <p>Formule : {selectedFormula.title}</p>
-        <p>Prix : {selectedFormula.price} €</p>
-        <div className="flex flex-row gap-2">
-          <p>Code Promo : </p> &nbsp;
-          <input
-            type="text"
-            className="rounded text-black p-2"
-            value={codePromo}
-            onChange={(e) => setCodePromo(e.target.value)}
+      ) : (
+        <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-4 sm:space-y-0 items-center w-full">
+          <div className="flex items-center space-x-2">
+            <label htmlFor="codePromo" className="text-lg">
+              <strong>Code Promo :</strong>
+            </label>
+            <input
+              type="text"
+              id="codePromo"
+              className="rounded-lg p-2 text-white border border-gray-300 focus:border-white focus:outline-none bg-gray-800"
+              value={codePromo}
+              onChange={(e) => setCodePromo(e.target.value)}
+              placeholder="Entrez le code promo"
+            />
+          </div>
+
+          <button
+            onClick={submitPromo}
+            className="mt-4 text-md font-bold text-center text-secondary bg-primary focus:outline-none font-semibold
+            bg-gradient-to-r from-[#4CACFF] via-[#A070EF] to-[#8E78DA] rounded-xl hover:bg-gradient-to-r hover:from-[#4CACFF] hover:via-[#4CACFF] hover:to-[#4CACFF] ease-in font-secondary-font p-2"
+          >
+            Appliquer
+          </button>
+        </div>
+      )}
+
+      {promoError && (
+        <p className="text-red-600 text-sm mt-2 mb-5">{promoError}</p>
+      )}
+
+      <span className="w-full h-0.5 bg-white mt-40" />
+
+      <h3 className="text-2xl font-bold text-center w-full mb-4">Paiement</h3>
+
+      <div className="mb-4 max-w-full w-full">
+        <label
+          className="block text-white text-sm font-medium mb-2"
+          htmlFor="card-number"
+        >
+          Numéro de Carte
+        </label>
+        <div className="border border-gray-300 rounded-md p-3">
+          <CardNumberElement
+            id="card-number"
+            options={CARD_ELEMENT_OPTIONS}
+            className="w-full focus:outline-none"
           />
         </div>
+        {errors.numcard && <p className="text-red-600">{errors.numcard}</p>}
       </div>
-      <div className="max-w-xl mx-auto w-2/4 bg-gray-900 shadow-lg rounded-lg p-6 mb-6">
-        <div className="mb-4">
+
+      <div className="mb-4 flex space-x-4 w-full">
+        <div className="w-1/2">
           <label
-            className="block text-gray-300 text-sm font-medium mb-2"
-            htmlFor="card-number"
+            className="block text-white text-sm font-medium mb-2"
+            htmlFor="card-expiry"
           >
-            Numéro de Carte
+            Date d'Expiration
           </label>
           <div className="border border-gray-300 rounded-md p-3">
-            <CardNumberElement
-              id="card-number"
+            <CardExpiryElement
+              id="card-expiry"
               options={CARD_ELEMENT_OPTIONS}
               className="w-full focus:outline-none"
             />
           </div>
-          {errors.numcard && <p className="text-red-600">{errors.numcard}</p>}
+          {errors.expDate && <p className="text-red-600">{errors.expDate}</p>}
         </div>
 
-        <div className="mb-4 flex space-x-4 ">
-          <div className="w-1/2">
-            <label
-              className="block text-gray-300 text-sm font-medium mb-2"
-              htmlFor="card-expiry"
-            >
-              Date d'Expiration
-            </label>
-            <div className="border border-gray-300 rounded-md p-3">
-              <CardExpiryElement
-                id="card-expiry"
-                options={CARD_ELEMENT_OPTIONS}
-                className="w-full focus:outline-none"
-              />
-            </div>
-            {errors.expDate && <p className="text-red-600">{errors.expDate}</p>}
+        <div className="w-1/2">
+          <label
+            className="block text-white text-sm font-medium mb-2"
+            htmlFor="card-cvc"
+          >
+            CVC
+          </label>
+          <div className="border border-gray-300 rounded-md p-3">
+            <CardCvcElement
+              id="card-cvc"
+              options={CARD_ELEMENT_OPTIONS}
+              className="w-full focus:outline-none"
+            />
           </div>
-
-          <div className="w-1/2">
-            <label
-              className="block text-gray-300 text-sm font-medium mb-2"
-              htmlFor="card-cvc"
-            >
-              CVC
-            </label>
-            <div className="border border-gray-300 rounded-md p-3">
-              <CardCvcElement
-                id="card-cvc"
-                options={CARD_ELEMENT_OPTIONS}
-                className="w-full focus:outline-none"
-              />
-            </div>
-            {errors.cvc && <p className="text-red-600">{errors.cvc}</p>}
-          </div>
+          {errors.cvc && <p className="text-red-600">{errors.cvc}</p>}
         </div>
       </div>
-
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="w-full text-center">
         {/* <button type="submit" disabled={loading}> */}
         <button
-          type="submit"
-          className="bg-green-600 text-white rounded px-2 mb-4"
+          className="mt-4 text-md font-bold text-center text-secondary bg-primary focus:outline-none font-semibold
+            bg-gradient-to-r from-[#4CACFF] via-[#A070EF] to-[#8E78DA] rounded-xl hover:bg-gradient-to-r hover:from-[#4CACFF] hover:via-[#4CACFF] hover:to-[#4CACFF] ease-in font-secondary-font p-2"
         >
-          {!loading ? "Passer Au Paiement" : <Loader />}
+          {!loading ? (
+            <p className="font-medium">Passer Au Paiement</p>
+          ) : (
+            <Loader />
+          )}
         </button>
         {is3dSecurewait && (
           <h4 className="text-white">3D Secure en attente...</h4>
         )}
-        {nerrors && <p className="text-red-600">{nerrors}</p>}
+        {nerrors && <p className="text-red-600 p-5">{nerrors}</p>}
       </form>
-    </>
+    </div>
   ) : (
     <div className="pdf-preview w-2/4 py-8">
       <h3 className="text-2xl font-bold mb-4 text-left text-white">
@@ -327,13 +420,6 @@ export default function Recapitulatif({
       ) : (
         <Loader />
       )}
-
-      <a
-        href="/"
-        className="bg-red-600 hover:bg-red-900 text-white font-bold py-2 px-4 rounded m-30"
-      >
-        Retour
-      </a>
     </div>
   );
 }

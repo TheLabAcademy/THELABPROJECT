@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "react-feather";
 import TopMain from "../../components/TopMain/TopMain";
@@ -6,6 +6,7 @@ import TopMain from "../../components/TopMain/TopMain";
 export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
   const [formData, setFormData] = useState({
     lastname: "",
     firstname: "",
@@ -17,6 +18,17 @@ export default function Signup() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const updateMedia = () => {
+      setIsMobile(window.innerWidth < 640); // 640px est la taille par défaut pour 'sm'
+    };
+
+    window.addEventListener("resize", updateMedia);
+    updateMedia(); // Vérifie la taille à l'initialisation
+
+    return () => window.removeEventListener("resize", updateMedia);
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -97,17 +109,22 @@ export default function Signup() {
               type="date"
               id="birthday"
               name="birthday"
-              className="input"
+              className={`input bg-transparent text-white border border-gray-300 p-3 ${
+                !formData.birthday && isMobile ? "opacity-0" : "opacity-100"
+              }`}
               required
               value={formData.birthday}
               onChange={handleChange}
               autoComplete="birthdate"
             />
             <label
-              htmlFor="contact"
-              className="absolute top-4 left-4 pointer-events-none transition-all duration-150 ease-[cubic-bezier(0.4,0,0.2,1) ] text-gray-400"
+              htmlFor="birthday"
+              className="absolute top-4 left-4 pointer-events-none transition-all duration-150 ease-[cubic-bezier(0.4,0,0.2,1)] text-gray-400 block lg:hidden"
             >
-              {/* Birthday */}
+              {" "}
+              {!formData.birthday
+                ? "Sélectionnez votre date de naissance en cliquant ici"
+                : "Date de naissance*"}
             </label>
           </div>
           <div className="relative text-white">

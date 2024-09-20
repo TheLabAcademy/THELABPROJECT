@@ -3,66 +3,67 @@
     "id": 1,
     "nom": "Atelier Tir 1",
     "description": "Un lanceur de ballon automatique t'envoie un ballon à l'entrée de la surface. Le but de l'atelier est simple : marquer un but en une touche de balle sur les 5 premiers essais et deux touches de balles sur les 5 derniers essais. Des cibles seront présentes dans les cages, à toi d'en toucher un maximum pour avoir les plus de points possible.",
-    "image": "../../src/assets/image/Ateliers/TirV1.jpg"
+    "image":  "/assets/image/workshops/TirV1.jpg"
+
   },
   {
     "id": 2,
     "nom": "Atelier Tir 2",
     "description": "Un filet de rebonds à l'entrée de la surface. Le but de l'atelier est simple : marquer sur une reprise instantanée. 10 essais. Des cibles seront présentes dans les cages, à toi d'en toucher un maximum pour avoir les plus de points possible.",
-    "image": "../../src/assets/image/Ateliers/TirV2.jpg"
+    "image": "/assets/image/workshops/TirV2.jpg"
   },
   {
     "id": 3,
     "nom": "Atelier Vitesse 1",
     "description": "Montre ta plus belle performance en sprintant sur 50 mètres. Un radar capteras ta vitesse de pointe. 3 essais. Le but de l'atelier est simple : être le plus rapide possible.",
-    "image": "../../src/assets/image/Ateliers/Radar.jpg"
+    "image": "/assets/image/workshops/Radar.jpg"
   },
   {
     "id": 4,
     "nom": "Atelier Vitesse 2",
     "description": "Cet exercice permet de mesurer ta performance sur un sprint avec changement de direction. Le but de l'atelier est simple : Tu as 1 minute pour parcourir la plus grande distance possible. Tu devras bien respecter les changements de direction pour valider ton parcours.",
-    "image": "../../src/assets/image/Ateliers/Sprint.jpg"
+    "image": "/assets/image/workshops/Sprint.jpg"
   },
   {
     "id": 5,
     "nom": "Atelier Passe 1",
     "description": "Pour cet exercice nous allons noter ta précision de passe. Positionné(e) a 25m de la cible tu aura 5 passes longues ballon arreté a réaliser puis 5 passes longues ballon en mouvement a réaliser. Le but de l'atelier est simple : obtenir un maximum de points en touchant la cible.",
-    "image": "../../src/assets/image/Ateliers/Cible.jpg"
+    "image": "/assets/image/workshops/Cible.jpg"
   },
   {
     "id": 6,
     "nom": "Atelier Passe 2",
     "description": "La rampe ! Tu aura au total 10 passes à ras de terre a réaliser (3 à 1 mètre , 3 à 3 mètres , 3 à 5 mètres et 1 à 10 mètres). Le but est de mesurer ta précision de passe à ras de terre ainsi que ta puissance de passe. Le but de l'atelier : obtenir un maximum de points en allant jusqu'en haut de la rampe sans faire tomber le ballon",
-    "image": "../../src/assets/image/Ateliers/Rampe.jpg"
+    "image": "/assets/image/workshops/Rampe.jpg"
   },
   {
     "id": 7,
     "nom": "Atelier Physique 1",
     "description": "Afin d'établir un profil de tes capacités physiques nous allons te faire réaliser une frappe contre un filet dans le but de mesurer la vitesse maximale de ta frappe. Le but de l'atelier est simple : frapper le plus fort possible",
-    "image": "../../src/assets/image/Ateliers/Filets.jpg"
+    "image": "/assets/image/workshops/Filets.jpg"
   },
   {
     "id": 8,
     "nom": "Atelier Physique 2",
     "description": "Et pour compléter ce profil physique nous allons mesurer ta détente verticale. Grâce a notre Mur de ballon tu pourras mesurer ta détente verticale. Le but de l'atelier est simple : sauter le plus haut possible",
-    "image": "../../src/assets/image/Ateliers/Mur.jpg"
+    "image": "/assets/image/workshops/Mur.jpg"
   },
   {
     "id": 9,
     "nom": "Atelier Vista 1",
     "description": "Comment est ta vision du jeu ? Cet atelier te permettra de mesurer ta vision du jeu. Tu devras réaliser 10 passes en une touche de balle sur 2 cibles différentes grâce à un code couleur, le tout après avoir réalisé un parcours d'obstacle. Le but de l'atelier est simple : toucher un maximum de cibles.",
-    "image": "../../src/assets/image/Ateliers/Parcours.jpg"
+    "image": "/assets/image/workshops/Parcours.jpg"
   },
   {
     "id": 10,
     "nom": "Atelier Vista 2",
     "description": "Le Dôme ! Cet atelier te permettra de mesurer ta vision du jeu. Tu devras réaliser 10 passes en une touche de balle sur 6 cibles différentes à l'interieur du dôme, nous allons calculer le temps que tu met pour prendre l'information a 360 degrès autour de toi et transmettre le ballon. Le but de l'atelier est simple : toucher un maximum de cibles le plus rapidement possible.",
-    "image": "../../src/assets/image/Ateliers/Dome.jpg"
+    "image": "/assets/image/workshops/Dome.jpg"
   },
   {
     "id": 11,
     "nom": "Atelier Coup Franc",
     "description": "Un mur de 4 joueurs (mannequins) et un gardien. Le but de l'atelier est simple : marquer sur coup franc. 10 essais. Des cibles seront présentes dans les cages, à toi d'en toucher un maximum pour avoir les plus de points possible.",
-    "image": "../../src/assets/image/Ateliers/CoupFranc.jpg"
+    "image": "/assets/image/workshops/CoupFranc.jpg"
   }
 ]

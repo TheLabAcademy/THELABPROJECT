@@ -46,7 +46,7 @@ CREATE TABLE stock_event (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     token VARCHAR(255) NULL,  -- Autoriser NULL pour la colonne token
-    unique_string VARCHAR(255) NULL -- Autoriser NULL pour la colonne unique_string
+    unique_string VARCHAR(255) NULL, -- Autoriser NULL pour la colonne unique_string
     stripe_charge_id VARCHAR(255) NOT NULL  -- Ajouter la colonne pour l'ID de la charge Stripe
 );
 

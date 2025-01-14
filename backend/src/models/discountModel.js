@@ -25,6 +25,15 @@ class discountManager extends AbstractManager {
     return add;
   }
 
+  async getDiscountById(id) {
+    // Requête SQL pour récupérer les informations du code promo via son id
+    const [discount] = await this.database.query(
+      `SELECT * FROM ${this.table} WHERE id = ?`,
+      [id]
+    );
+    return discount;
+  }
+
   async updateDiscount(id, updateFields) {
     // Créer une chaîne de requête SQL dynamique
     const setClause = Object.keys(updateFields)

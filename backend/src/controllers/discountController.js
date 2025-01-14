@@ -4,30 +4,34 @@
 // const discountModel = require("../models/discountModel");
 const tables = require("../tables");
 
+// eslint-disable-next-line consistent-return
 const getDiscount = async (req, res) => {
   try {
     const id = req.payload;
     const [admin] = await tables.user.getUserById(id);
-    const discount = await tables.discount.getDiscountAll();
-    const currentDate = Date.now();
+
+    // Vérification des droits d'administration
     if (admin[0].is_admin !== "admin" && admin[0].is_admin !== "superAdmin") {
-      res.status(401).json({ error: "Vous n'avez pas les droits" });
-    } else {
-      const updateDiscount = await Promise.all(
-        discount.map(async (discounts) => {
-          console.info(
-            "new Date(discounts.date)",
-            new Date(discounts.duree_de_validite)
-          );
-          console.info("new Date(currentDate)", new Date(currentDate));
-          if (new Date(discounts.duree_de_validite) <= new Date(currentDate)) {
-            await tables.discount.updateStatusDiscount(discounts.id);
-          }
-          return discounts;
-        })
-      );
-      res.send(updateDiscount);
+      return res.status(401).json({ error: "Vous n'avez pas les droits" });
     }
+
+    // Récupération des remises
+    const discounts = await tables.discount.getDiscountAll();
+    const currentDate = Date.now();
+
+    // Vérification de la date et mise à jour du statut
+    const updatedDiscounts = await Promise.all(
+      discounts.map(async (discount) => {
+        // Si la remise est expirée, mettre à jour le statut
+        if (new Date(discount.duree_de_validite) <= new Date(currentDate)) {
+          await tables.discount.updateStatusDiscount(discount.id);
+          return discount; // Retourner la remise mise à jour
+        }
+        return discount; // Retourner la remise sans mise à jour
+      })
+    );
+
+    res.send(updatedDiscounts);
   } catch (error) {
     res.sendStatus(500);
   }
@@ -48,6 +52,7 @@ const addDiscount = async (req, res, next) => {
     next(err);
   }
 };
+
 const updateDiscount = async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);

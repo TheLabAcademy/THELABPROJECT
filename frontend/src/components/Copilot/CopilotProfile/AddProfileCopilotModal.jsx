@@ -48,7 +48,7 @@ export default function AddProfileCopilotModal({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
+    console.info("formData", formData);
     const formDataToSend = new FormData();
     Object.entries(formData).forEach(([key, value]) => {
       formDataToSend.append(key, value);

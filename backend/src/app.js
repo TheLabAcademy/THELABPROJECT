@@ -32,8 +32,8 @@ app.use(
   cors({
     origin: [
       process.env.FRONTEND_URL, // keep this one, after checking the value in `backend/.env`
-      "http://mysite.com",
-      "http://another-domain.com",
+      "https://thelab-academy.fr",
+      "https://www.thelab-academy.fr",
     ],
   })
 );
@@ -107,19 +107,26 @@ app.use("/api", router);
 // 1. Uncomment the lines related to serving static files and redirecting unhandled requests.
 // 2. Ensure that the `reactBuildPath` points to the correct directory where your frontend's build artifacts are located.
 
-// const reactBuildPath = `${__dirname}/../../frontend/dist`;
+
+
+const PORT = process.env.PORT || 3310;
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+
+const reactBuildPath = `/usr/src/app/public/`;
 
 // Serve react resources
 
-// app.use(express.static(reactBuildPath));
+app.use(express.static(reactBuildPath));
 app.use("/uploads", express.static("uploads"));
 
 // Redirect unhandled requests to the react index file
-/*
 app.get("*", (req, res) => {
-  res.sendFile(`${reactBuildPath}/index.html`);
+  res.sendFile(`/usr/src/app/public/index.html`);
 });
-*/
 
 /* ************************************************************************* */
 

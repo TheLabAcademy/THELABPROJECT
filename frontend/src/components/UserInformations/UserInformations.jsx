@@ -3,27 +3,33 @@
 import PropTypes from "prop-types";
 // import { useState } from "react";
 
-export default function UserInformations({
-  formUserInfos,
-  setFormUserInfos,
-  setIsFormValid,
-}) {
+export default function UserInformations({ formUserInfos, setFormUserInfos }) {
   const handleUserInfosSubmit = (e) => {
     e.preventDefault();
   };
-
-  const handleUserInfosChange = (e) => {
-    setFormUserInfos((prevFormUserInfos) => {
-      const updatedFormUserInfos = {
-        ...prevFormUserInfos,
-        [e.target.name]: e.target.value,
-      };
-      const isFormValid = Object.values(updatedFormUserInfos).every(
-        (value) => value !== "" && value !== null && value !== undefined
-      );
-      setIsFormValid(isFormValid);
-      return updatedFormUserInfos;
-    });
+  const handleUserInfosChange = (event) => {
+    const { name, value, files } = event.target;
+    if (name === "img") {
+      if (files === null) {
+        const file = `${import.meta.env.VITE_BACKEND_URL}/${formUserInfos[0].avatar}`;
+        console.info("file", file);
+        setFormUserInfos((prevFormData) => ({
+          ...prevFormData,
+        }));
+      } else {
+        const file = files[0];
+        console.info("file", file);
+        setFormUserInfos((prevFormData) => ({
+          ...prevFormData,
+          [name]: file,
+        }));
+      }
+    } else {
+      setFormUserInfos((prevFormData) => ({
+        ...prevFormData,
+        [name]: value,
+      }));
+    }
   };
 
   return (
@@ -67,6 +73,24 @@ export default function UserInformations({
           className="absolute top-4 left-4 pointer-events-none transition-all duration-150 ease-[cubic-bezier(0.4,0,0.2,1)] text-gray-400"
         >
           Ville *
+        </label>
+      </div>
+      <div className="relative text-white">
+        <input
+          type="text"
+          id="code_postal"
+          name="code_postal"
+          className="input"
+          required
+          value={formUserInfos.code_postal}
+          onChange={handleUserInfosChange}
+          autoComplete="postal-code"
+        />
+        <label
+          htmlFor="code_postal"
+          className="absolute top-4 left-4 pointer-events-none transition-all duration-150 ease-[cubic-bezier(0.4,0,0.2,1)] text-gray-400"
+        >
+          Code Postal *
         </label>
       </div>
       <div className="relative text-white">
@@ -234,7 +258,7 @@ UserInformations.propTypes = {
     numero_de_telephone: PropTypes.number.isRequired,
     adresse_postale: PropTypes.string.isRequired,
     ville: PropTypes.string.isRequired,
+    code_postal: PropTypes.number.isRequired,
   }).isRequired,
   setFormUserInfos: PropTypes.func.isRequired,
-  setIsFormValid: PropTypes.func.isRequired,
 };

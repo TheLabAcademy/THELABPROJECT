@@ -31,9 +31,5 @@
     "cross-env": "^7.0.3",
     "husky": "^8.0.3",
     "lint-staged": "^13.2.3"
-  },
-  "dependencies": {
-    "@react-pdf/renderer": "^3.4.4",
-    "@stripe/stripe-js": "^4.4.0"
   }
 }

@@ -41,7 +41,6 @@ export default function ForgotPassword() {
         return res.json();
       })
       .then((data) => {
-        console.info("data", data);
         setTimeout(() => {
           setErrorMessage(data.message);
           setLoading(false);

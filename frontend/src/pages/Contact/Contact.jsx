@@ -6,7 +6,7 @@ import Form from "../../components/formulaire/form";
 export default function Contact() {
   return (
     <div className="w-full">
-      <TopMain title="Contact" description="Une Question ?" />
+      <TopMain title="Contact" description="Une question ?" />
       <div className="flex flex-col justify-center items-center">
         <div className="xl:w-[900px] m-8">
           <Form />

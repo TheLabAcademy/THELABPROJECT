@@ -80,10 +80,23 @@ const createStockEvent = async (req, res, charge) => {
       // Vérifiez si la mise à jour du token et unique_string a réussi
       if (updateEventResult.affectedRows === 1) {
         // Décrémentez la quantité disponible pour l'événement
-        const [updateResult] = await tables.stock_event.decrementEventQuantity(
+        const [updateResult] = await tables.event.decrementEventQuantity(
           event_id.event_id
         );
         if (updateResult.affectedRows === 1) {
+          // Vérifiez si la quantité est désormais égale à zéro
+          const [updatedEvent] = await tables.event.getEventById(
+            event_id.event_id
+          );
+          console.info("Quantité restante pour l'événement : ", updatedEvent);
+          if (updatedEvent[0].quantity >= 0) {
+            console.info(
+              "Quantité restante pour l'événement : ",
+              updatedEvent.quantity
+            );
+            // Mettez l'événement à "inactive"
+            await tables.event.updateStatusEvent(event_id.event_id);
+          }
           return res.status(201).json({
             data: {
               status: "accepted",

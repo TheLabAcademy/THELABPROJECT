@@ -48,6 +48,36 @@ export default function MainContentUser() {
   function closeModal() {
     setIsModalOpen(false);
   }
+
+  const setTemporaryPassword = async (userId) => {
+    const tempPassword = prompt("Entrez le mot de passe temporaire :");
+    if (!tempPassword) return; // Si l'utilisateur annule ou ne saisit rien
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/temporary-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`,
+          },
+          body: JSON.stringify({ userId, temporaryPassword: tempPassword }),
+        }
+      );
+
+      if (response.ok) {
+        alert(
+          `Le mot de passe temporaire a été défini avec succès.\nMot de passe : ${tempPassword}`
+        );
+      } else {
+        alert("Erreur lors de la définition du mot de passe temporaire");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Erreur lors de la définition du mot de passe temporaire");
+    }
+  };
+
   const filteredUsers = users?.filter((user) =>
     Object.values(user).some(
       (value) =>
@@ -101,6 +131,16 @@ export default function MainContentUser() {
                   locale: fr,
                 })}
               </p>
+              <button
+                type="button"
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mr-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setTemporaryPassword(user.id);
+                }}
+              >
+                Définir MDP temporaire
+              </button>
             </button>
           ))}
         </div>

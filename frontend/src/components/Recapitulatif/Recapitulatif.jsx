@@ -6,6 +6,8 @@ import {
   CardExpiryElement,
   CardCvcElement,
 } from "@stripe/react-stripe-js";
+import { FaLock, FaShieldAlt, FaCreditCard } from "react-icons/fa";
+import { RiSecurePaymentLine } from "react-icons/ri";
 import { UserContext } from "../../context/UserContext";
 import TicketViewer from "../Copilot/PdfTicket/TicketViewer";
 import Loader from "../loader/Loader";
@@ -338,7 +340,6 @@ export default function Recapitulatif({
       <span className="w-full h-0.5 bg-white mt-40" />
 
       <h3 className="text-2xl font-bold text-center w-full mb-4">Paiement</h3>
-
       <div className="mb-4 max-w-full w-full">
         <label
           className="block text-white text-sm font-medium mb-2"
@@ -389,6 +390,45 @@ export default function Recapitulatif({
             />
           </div>
           {errors.cvc && <p className="text-red-600">{errors.cvc}</p>}
+        </div>
+      </div>
+
+      <div className="w-full p-4 bg-[#1f1725] rounded-lg mb-6">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center gap-2">
+            <FaLock className="text-green-500 text-xl" />
+            <div className="text-left">
+              <p className="text-xs font-bold">Cryptage SSL</p>
+              <p className="text-[10px] text-gray-300">
+                Vos données sont protégées
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <FaShieldAlt className="text-green-500 text-xl" />
+            <div className="text-left">
+              <p className="text-xs font-bold">Paiement Vérifié</p>
+              <p className="text-[10px] text-gray-300">
+                Transaction 100% sécurisée
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <FaCreditCard className="text-green-500 text-xl" />
+            <div className="text-left">
+              <p className="text-xs font-bold">Cartes Acceptées</p>
+              <p className="text-[10px] text-gray-300">Visa, Mastercard, CB</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <RiSecurePaymentLine className="text-green-500 text-xl" />
+            <div className="text-left">
+              <p className="text-xs font-bold">3D Secure</p>
+              <p className="text-[10px] text-gray-300">
+                Authentication renforcée
+              </p>
+            </div>
+          </div>
         </div>
       </div>
       <form onSubmit={handleSubmit} className="w-full text-center">

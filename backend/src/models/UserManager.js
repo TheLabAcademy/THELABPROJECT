@@ -8,7 +8,7 @@ const mailgun = new Mailgun(formData);
 
 const mg = mailgun.client({
   username: "api",
-  key: "ca44c3911b7ef5d13f5cde057da3623f-9c3f0c68-29c9d103", // Remplacez par votre clé API
+  key: "ca44c3911b7ef5d13f5cde057da3623f-9c3f0c68-29c9d103", // Remplacez par votre clef API Mailgun
 });
 
 const AbstractManager = require("./AbstractManager");
@@ -72,7 +72,6 @@ class UserManager extends AbstractManager {
   }
 
   // Methode pour réinisialiser le mot de passe
-
   async createPasswordResetToken(email) {
     const user = await this.getUserByEmail(email);
     if (!user) {
@@ -135,6 +134,13 @@ class UserManager extends AbstractManager {
       resetPasswordToken: null,
       resetPasswordExpires: null,
     });
+  }
+
+  async setTemporaryPassword(userId, hashedPassword) {
+    return this.database.query(
+      `UPDATE ${this.table} SET hashedPassword = ? WHERE id = ?`,
+      [hashedPassword, userId]
+    );
   }
 
   // METHODES A AJOUTER APRES LA CREATION DU BACKOFFICE //

@@ -121,31 +121,56 @@ export default function Stepper() {
         ))}
       </div>
       {currentStep < 4 && (
-        <button
-          className="mt-4 text-md font-bold text-center text-secondary bg-primary focus:outline-none 
-            bg-gradient-to-r from-[#4CACFF] via-[#A070EF] to-[#8E78DA] rounded-xl hover:bg-gradient-to-r hover:from-[#4CACFF] hover:via-[#4CACFF] hover:to-[#4CACFF] ease-in font-primary-font p-2"
-          disabled={
-            (currentStep === 1 && !selectedEvent) ||
-            (currentStep === 2 && !selectedFormula)
-          }
-          onClick={() => {
-            if (currentStep === steps.length) {
-              setcomplete(true);
-            } else if (currentStep === 3) {
-              handleSendUserInfos();
-            } else {
-              setcurrentStep((prev) => prev + 1);
-            }
-          }}
-        >
-          {currentStep === steps.length ? (
-            "Terminer"
-          ) : loading ? (
-            <Loader />
-          ) : (
-            "Etape Suivante"
+        <div className="flex gap-4 justify-center">
+          {currentStep > 1 && (
+            <button
+              className="mt-4 text-md font-bold text-center text-secondary bg-primary focus:outline-none 
+              bg-gradient-to-r from-[#8E78DA] via-[#A070EF] to-[#4CACFF] rounded-xl hover:bg-gradient-to-r 
+              hover:from-[#8E78DA] hover:via-[#8E78DA] hover:to-[#8E78DA] ease-in font-primary-font p-2"
+              onClick={() => setcurrentStep((prev) => prev - 1)}
+            >
+              Précédent
+            </button>
           )}
-        </button>
+          <button
+            className={`mt-4 text-md font-bold text-center text-secondary bg-primary focus:outline-none 
+            bg-gradient-to-r from-[#4CACFF] via-[#A070EF] to-[#8E78DA] rounded-xl hover:bg-gradient-to-r 
+            hover:from-[#4CACFF] hover:via-[#4CACFF] hover:to-[#4CACFF] ease-in font-primary-font p-2
+            ${
+              (currentStep === 1 &&
+                (!selectedEvent ||
+                  !selectedEvent.id ||
+                  !selectedEvent.address)) ||
+              (currentStep === 2 && !selectedFormula)
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }`}
+            disabled={
+              (currentStep === 1 &&
+                (!selectedEvent ||
+                  !selectedEvent.id ||
+                  !selectedEvent.address)) ||
+              (currentStep === 2 && !selectedFormula)
+            }
+            onClick={() => {
+              if (currentStep === steps.length) {
+                setcomplete(true);
+              } else if (currentStep === 3) {
+                handleSendUserInfos();
+              } else {
+                setcurrentStep((prev) => prev + 1);
+              }
+            }}
+          >
+            {currentStep === steps.length ? (
+              "Terminer"
+            ) : loading ? (
+              <Loader />
+            ) : (
+              "Suivant"
+            )}
+          </button>
+        </div>
       )}
 
       {error && <p className="text-red-500">{error}</p>}

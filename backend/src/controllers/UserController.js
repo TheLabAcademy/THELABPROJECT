@@ -133,14 +133,50 @@ const updatePassword = async (req, res) => {
   try {
     const id = req.payload;
     const { hashedPassword } = req.body;
-    const [user] = await tables.user.updateUserOnlyPassword(id, hashedPassword);
-    if (user.affectedRows) {
+    console.info("coucou", hashedPassword);
+    // Vérifier que l'utilisateur existe
+    const [user] = await tables.user.getUserById(id);
+    if (!user[0]) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
+
+    // Vérifier l'ancien mot de passe
+    // try {
+    //   const validPassword = await argon2.verify(
+    //     user[0].hashedPassword,
+    //     currentPassword
+    //   );
+    //   if (!validPassword) {
+    //     return res
+    //       .status(401)
+    //       .json({ message: "Mot de passe actuel incorrect" });
+    //   }
+    // } catch (err) {
+    //   console.error("Erreur lors de la vérification du mot de passe:", err);
+    //   return res
+    //     .status(500)
+    //     .json({ message: "Erreur lors de la vérification du mot de passe" });
+    // }
+
+    // Hash le nouveau mot de passe
+    // const newHashedPassword = await argon2.hash(hashedPassword);
+
+    // Mettre à jour le mot de passe
+    const [result] = await tables.user.updateUserOnlyPassword(
+      id,
+      hashedPassword
+    );
+
+    if (result.affectedRows) {
       res.status(200).json({ message: "Mot de passe modifié avec succès" });
     } else {
-      res.status(401).send("Problème lors de la modification du mot de passe");
+      res
+        .status(500)
+        .json({ message: "Problème lors de la modification du mot de passe" });
     }
   } catch (error) {
-    res.status(500).send(error);
+    console.error("Erreur lors de la modification du mot de passe:", error);
+    res.status(500).json({ message: "Erreur serveur" });
   }
 };
 
@@ -294,6 +330,42 @@ const getTotalUsers = async (req, res) => {
   }
 };
 
+const setTemporaryPassword = async (req, res) => {
+  const { userId, temporaryPassword } = req.body;
+  const id = req.payload;
+
+  console.info("npmn");
+
+  const [admin] = await tables.user.getUserById(id);
+
+  if (admin[0].is_admin !== "superAdmin") {
+    return res.status(401).json({ error: "Vous n'avez pas les droits" });
+  }
+  try {
+    console.info("ouii", temporaryPassword);
+    // Hash the temporary password
+    const hashedPassword = await argon2.hash(temporaryPassword);
+
+    // Update the password in database
+    const [result] = await tables.user.setTemporaryPassword(
+      userId,
+      hashedPassword
+    );
+
+    if (result.affectedRows === 0) {
+      res.status(404).json({ message: "Utilisateur non trouvé" });
+      return;
+    }
+
+    res
+      .status(200)
+      .json({ message: "Mot de passe temporaire défini avec succès" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
 module.exports = {
   getAllUsers,
   getAllUserss,
@@ -303,7 +375,6 @@ module.exports = {
   getUserByEmail,
   getUserById,
   deleteUser,
-  // logout,
   createPasswordResetToken,
   resetPassword,
   setUserAdmin,
@@ -311,4 +382,5 @@ module.exports = {
   desactivateUser,
   activateUser,
   getTotalUsers,
+  setTemporaryPassword,
 };

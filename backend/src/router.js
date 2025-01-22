@@ -287,4 +287,10 @@ router.put(
   userMissionsController.updateUserMissions
 );
 
+router.post(
+  "/temporary-password",
+  verifyToken,
+  userControllers.setTemporaryPassword
+);
+
 module.exports = router;

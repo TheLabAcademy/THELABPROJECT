@@ -1,13 +1,25 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { FaChartLine, FaCalendarAlt, FaUser } from "react-icons/fa";
 import { IoMailOutline } from "react-icons/io5";
 import { MdOutlineSportsSoccer, MdSports } from "react-icons/md";
 import { GrScorecard } from "react-icons/gr";
+import { RiLockPasswordLine } from "react-icons/ri";
 import { NavLink } from "react-router-dom";
 import { UserContext } from "../../../context/UserContext";
+import ChangePasswordModal from "./ChangePasswordModal";
 
 export default function SidebarCopilotDesktop() {
   const { user } = useContext(UserContext);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+
+  function openPasswordModal() {
+    setIsPasswordModalOpen(true);
+  }
+
+  function closePasswordModal() {
+    setIsPasswordModalOpen(false);
+  }
+
   return (
     <div className="border-background-color-second rounded-b-[20px] border-r-2 pr-5 ">
       <div className="border-background-color-second rounded-tl-[20px] ">
@@ -43,6 +55,12 @@ export default function SidebarCopilotDesktop() {
         <NavLink to="/copilot/copilotcontact" className="flex items-center">
           <IoMailOutline className="mr-4" /> CONTACT
         </NavLink>
+        <button
+          onClick={openPasswordModal}
+          className="flex items-center text-white hover:text-gray-300"
+        >
+          <RiLockPasswordLine className="mr-4" /> CHANGER MOT DE PASSE
+        </button>
       </div>
       <div className="flex flex-col items-center my-10">
         {user.data.avatar ? (
@@ -59,6 +77,12 @@ export default function SidebarCopilotDesktop() {
           />
         )}
       </div>
+
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        // eslint-disable-next-line react/jsx-no-bind
+        onRequestClose={closePasswordModal}
+      />
     </div>
   );
 }

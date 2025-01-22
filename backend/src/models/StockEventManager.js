@@ -19,13 +19,6 @@ class StockEventManager extends AbstractManager {
     );
   }
 
-  async decrementEventQuantity(event_id) {
-    return this.database.query(
-      `UPDATE event SET quantity = quantity - 1 WHERE id = ?`,
-      [event_id]
-    );
-  }
-
   async checkUserEventById(user_id) {
     return this.database.query(
       `SELECT * FROM ${this.table} WHERE user_id = ?`,

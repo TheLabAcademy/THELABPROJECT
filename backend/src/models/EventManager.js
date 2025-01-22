@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 const AbstractManager = require("./AbstractManager");
 
 class EventManager extends AbstractManager {
@@ -48,6 +49,13 @@ class EventManager extends AbstractManager {
     return this.database.query(
       `UPDATE ${this.table} SET status = "inactive" where id = ?`,
       [id]
+    );
+  }
+
+  async decrementEventQuantity(event_id) {
+    return this.database.query(
+      `UPDATE event SET quantity = quantity - 1 WHERE id = ?`,
+      [event_id]
     );
   }
 

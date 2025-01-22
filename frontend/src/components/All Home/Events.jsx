@@ -76,7 +76,7 @@ export default function Events() {
             </p>
             <p className="md:flex md:justify-end md:gap-2">
               <IoTicketOutline className="inline-block " /> Il reste{" "}
-              <span className="font-primary-font  font-bold bg-clip-text text-transparent  bg-gradient-to-b from-gradient-color1 via-gradient-color3 to-gradient-color2">
+              <span className="font-primary-font font-bold text-lg md:text-xl text-transparent bg-clip-text bg-gradient-to-b from-gradient-color1 via-gradient-color3 to-gradient-color2 animate-bounce">
                 {" "}
                 {event.quantity}
               </span>{" "}

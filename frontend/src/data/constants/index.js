@@ -82,7 +82,7 @@ export const formulas = [
     stripeId: import.meta.env.VITE_OFFER_PREMIUM_STRIPE, // ID du prix sur Stripe
     description: [
       "Accès à l'événement",
-      "ScoreCard numérique personnalisée",
+      "ScoreCard numérique et physique personnalisée",
       "Accès à l'application TheLab pour suivre votre progression",
       "Paire de crampons personnalisée",
       "Participation au jeux concours",

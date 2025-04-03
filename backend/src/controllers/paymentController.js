@@ -179,7 +179,7 @@ const addPayment = async (req, res, next) => {
         data: {
           paymentIntentId: paymentIntent.id,
           clientSecret: paymentIntent.client_secret,
-          discount_id: promotionCode.id || null,
+          discount_id: promotionCode?.id || null,
           status: "requires_action",
           priceId: price.id,
         },

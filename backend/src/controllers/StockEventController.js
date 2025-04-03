@@ -88,11 +88,11 @@ const createStockEvent = async (req, res, charge) => {
           const [updatedEvent] = await tables.event.getEventById(
             event_id.event_id
           );
-          console.info("Quantité restante pour l'événement : ", updatedEvent);
-          if (updatedEvent[0].quantity >= 0) {
+
+          if (updatedEvent[0].quantity === 0) {
             console.info(
               "Quantité restante pour l'événement : ",
-              updatedEvent.quantity
+              updatedEvent[0].quantity
             );
             // Mettez l'événement à "inactive"
             await tables.event.updateStatusEvent(event_id.event_id);

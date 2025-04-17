@@ -23,7 +23,7 @@ const fileFilter = (req, file, cb) => {
   }
 };
 // choisir la taille maximal de fichier
-const maxSize = 2 * 600 * 600;
+const maxSize = 2 * 1024 * 1024;
 
 const upload = multer({
   storage,

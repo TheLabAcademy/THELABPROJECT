@@ -59,9 +59,10 @@ export default function Stepper() {
   }, []);
 
   const handleSendUserInfos = () => {
-    // check si tout est entré
-    const formVerif = Object.values(formUserInfos).every((value) => {
-      console.info("value", value);
+    // check si tout est entré sauf l'image qui est optionnelle
+    const formVerif = Object.entries(formUserInfos).every(([key, value]) => {
+      // On ignore la vérification pour le champ img
+      if (key === "img") return true;
       return value !== "" && value !== null && value !== undefined;
     });
     console.info("formVerif", formVerif);

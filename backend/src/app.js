@@ -53,7 +53,7 @@ app.use(
 
 // Uncomment one or more of these options depending on the format of the data sent by your client:
 
-app.use(express.json());
+app.use(express.json({ limit: "50mb" })); // Définir une limite de 50MB pour les requêtes JSON
 
 // app.use(express.urlencoded());
 // app.use(express.text());
@@ -107,14 +107,11 @@ app.use("/api", router);
 // 1. Uncomment the lines related to serving static files and redirecting unhandled requests.
 // 2. Ensure that the `reactBuildPath` points to the correct directory where your frontend's build artifacts are located.
 
-
-
 const PORT = process.env.PORT || 3310;
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  // console.log(`Server is running on port ${PORT}`);
 });
-
 
 const reactBuildPath = `/usr/src/app/public/`;
 

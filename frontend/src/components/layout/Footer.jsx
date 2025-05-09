@@ -98,7 +98,7 @@ function Footer() {
         </div>
       </div>
       <div className="flex items-center justify-around lg:gap-40 lg:justify-center">
-        <Link to="mailto:thelab@gmail.com">
+        <Link to="mailto:thelabfr.contact@gmail.com">
           <div className="flex gap-5 items-center">
             <img src={mail} alt="email" className="w-8 h-8" />
             <p className="text-white font-bold underline font-secondary-font">
